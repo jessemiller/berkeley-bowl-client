@@ -1,6 +1,6 @@
 # Berkeley Bowl Client
 
-An unofficial Python client for interacting with the Berkeley Bowl online ordering system.
+An unofficial Python client and Next.js web interface for interacting with the Berkeley Bowl online ordering system.
 
 ## ⚠️ Disclaimer
 
@@ -12,46 +12,111 @@ This is an **unofficial** client library and is not affiliated with or endorsed 
 - 🔍 Product search
 - 📦 Product details retrieval
 - 🛒 Add items to cart
+- 🌐 Modern Next.js web interface
 
-## Installation
+## Project Structure
+
+```
+berkeley_bowl_client/
+├── backend/              # Python FastAPI server
+│   ├── api.py           # FastAPI endpoints
+│   ├── berkeley_bowl_client.py  # Core client library
+│   └── requirements.txt
+├── frontend/            # Next.js application
+│   ├── pages/          # Next.js pages
+│   ├── components/     # React components
+│   └── lib/            # API client utilities
+└── berkeley_bowl_client.py  # Standalone client (original)
+```
+
+## Quick Start
+
+### Option 1: Web Interface (Recommended)
+
+1. **Set up the backend:**
+
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+2. **Create backend `.env` file:**
+
+   ```bash
+   cd backend
+   cp ../.env.example .env
+   # Edit .env with your credentials
+   ```
+
+3. **Start the backend server:**
+
+   ```bash
+   cd backend
+   uvicorn api:app --reload --port 8000
+   ```
+
+4. **Set up the frontend (in a new terminal):**
+
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+5. **Create frontend `.env.local` file:**
+
+   ```bash
+   cd frontend
+   echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
+   ```
+
+6. **Start the frontend:**
+
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+7. **Open your browser:**
+
+   Navigate to `http://localhost:3000` and login with your Berkeley Bowl credentials.
+
+### Option 2: Python Client Only
+
+If you just want to use the Python client directly:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Or install dependencies directly:
-
-```bash
-pip install requests python-dotenv
+Create a `.env` file:
+```
+BERKELEY_BOWL_EMAIL=your-email@example.com
+BERKELEY_BOWL_PASSWORD=your-password
 ```
 
-## Setup
+Then use it in your Python code (see [Python Client Usage](#python-client-usage) below).
 
-1. Clone this repository:
-   ```bash
-   git clone <repository-url>
-   cd berkeley_bowl_client
-   ```
+## Web Interface Usage
 
-2. Create a `.env` file in the project root:
-   ```bash
-   cp .env.example .env
-   ```
+The Next.js frontend provides a user-friendly interface to:
 
-3. Edit `.env` and add your Berkeley Bowl credentials:
-   ```
-   BERKELEY_BOWL_EMAIL=your-email@example.com
-   BERKELEY_BOWL_PASSWORD=your-password
-   ```
+1. **Login** - Authenticate with your Berkeley Bowl credentials
+2. **Search** - Search for products by name
+3. **View Products** - See detailed product information
+4. **Add to Cart** - Add items to your shopping cart
 
-   **Important:** Never commit your `.env` file to version control. It's already included in `.gitignore`.
+### Pages
 
-## Usage
+- `/` - Login page
+- `/search` - Product search page
+- `/product/[id]` - Product detail page
+
+## Python Client Usage
 
 ### Basic Example
 
 ```python
-from berkeley_bowl_client import BerkeleyBowlClient
+from backend.berkeley_bowl_client import BerkeleyBowlClient
 import os
 from dotenv import load_dotenv
 
@@ -76,7 +141,7 @@ for product in products:
 ### Advanced Example
 
 ```python
-from berkeley_bowl_client import BerkeleyBowlClient
+from backend.berkeley_bowl_client import BerkeleyBowlClient
 import os
 from dotenv import load_dotenv
 
@@ -119,7 +184,19 @@ if products:
 
 ## API Reference
 
-### `BerkeleyBowlClient`
+### Backend API Endpoints
+
+The FastAPI backend provides the following endpoints:
+
+- `POST /api/login` - Authenticate and get session ID
+- `GET /api/search?q=...&limit=...` - Search products
+- `GET /api/product/{product_id}` - Get product details
+- `POST /api/cart/add` - Add item to cart
+- `GET /api/health` - Health check
+
+All endpoints (except login) require the `X-Session-ID` header.
+
+### `BerkeleyBowlClient` (Python)
 
 #### Constructor
 
@@ -131,62 +208,71 @@ BerkeleyBowlClient(
 )
 ```
 
-- `base_url`: Base URL for the Berkeley Bowl API (default: production URL)
-- `store_id`: Store ID to use (default: "2047")
-- `timeout`: Request timeout in seconds (default: 10)
-
 #### Methods
 
 ##### `login(email: str, password: str) -> None`
 
 Authenticate with the Berkeley Bowl ordering system.
 
-**Parameters:**
-- `email`: Your Berkeley Bowl account email
-- `password`: Your Berkeley Bowl account password
-
-**Raises:**
-- `requests.HTTPError`: If authentication fails
-
 ##### `search_products(query: str, limit: int = 8, mode: str = "pickup") -> Dict[str, Any]`
 
 Search for products in the store.
-
-**Parameters:**
-- `query`: Search query string
-- `limit`: Maximum number of results to return (default: 8)
-- `mode`: Order mode, typically "pickup" (default: "pickup")
-
-**Returns:**
-- Dictionary containing search results with product data
 
 ##### `get_product(product_id: str) -> Dict[str, Any]`
 
 Get detailed information about a specific product.
 
-**Parameters:**
-- `product_id`: The product ID to retrieve
-
-**Returns:**
-- Dictionary containing detailed product information
-
 ##### `add_to_cart(store_product_id: str, quantity: int = 1, mode: str = "each") -> Dict[str, Any]`
 
 Add an item to your shopping cart.
 
-**Parameters:**
-- `store_product_id`: The store-specific product ID
-- `quantity`: Quantity to add (default: 1)
-- `mode`: Pricing mode, typically "each" (default: "each")
-
-**Returns:**
-- Dictionary containing updated cart information
-
 ## Requirements
 
+### Backend
 - Python 3.7+
+- `fastapi` - Web framework
+- `uvicorn` - ASGI server
 - `requests` - HTTP library
 - `python-dotenv` - Environment variable management
+- `pydantic` - Data validation
+
+### Frontend
+- Node.js 18+
+- Next.js 14
+- React 18
+- Axios - HTTP client
+- Tailwind CSS - Styling
+
+## Development
+
+### Running Development Servers
+
+**Backend:**
+```bash
+cd backend
+uvicorn api:app --reload --port 8000
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+
+The backend will be available at `http://localhost:8000` and the frontend at `http://localhost:3000`.
+
+### Environment Variables
+
+**Backend** (`.env` in `backend/` directory):
+```
+BERKELEY_BOWL_EMAIL=your-email@example.com
+BERKELEY_BOWL_PASSWORD=your-password
+```
+
+**Frontend** (`.env.local` in `frontend/` directory):
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
 ## Contributing
 
@@ -202,4 +288,4 @@ This project is provided as-is for educational and personal use.
 - The API may change without notice, which could break this client
 - Always use environment variables for credentials - never hardcode them
 - The client maintains a session with cookies for authenticated requests
-
+- Backend sessions are stored in-memory (use Redis or a database for production)
