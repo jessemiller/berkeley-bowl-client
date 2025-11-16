@@ -8,7 +8,7 @@ export default function ProductCard({ product }) {
   };
 
   const price = product.price || product.salePrice || 'N/A';
-  const imageUrl = product.imageUrl || product.thumbnailUrl || '/placeholder.png';
+  const imageUrl = product.thumbImage || '/placeholder.png';
 
   return (
     <div

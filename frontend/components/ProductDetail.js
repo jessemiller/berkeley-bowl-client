@@ -9,7 +9,7 @@ export default function ProductDetail({ product }) {
   const [message, setMessage] = useState('');
 
   const price = product.price || product.salePrice || 'N/A';
-  const imageUrl = product.imageUrl || product.thumbnailUrl || null;
+  const imageUrl = product.image || null;
   const storeProductId = product.id || product.storeProductId;
 
   const handleAddToCart = async () => {
